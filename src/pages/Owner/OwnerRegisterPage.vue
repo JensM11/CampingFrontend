@@ -1,37 +1,42 @@
 <template>
-  <div class="register-container">
-    <div class="register-box">
-      <h2>Register as Owner</h2>
-      <form @submit.prevent="register">
-        <div>
-          <label for="Name">Name*</label>
-          <input type="text" v-model="name" required />
-        </div>
-        <div>
-          <label for="password">Password*</label>
-          <input type="password" v-model="password" required />
-        </div>
-        <div>
-          <label for="email">Email*</label>
-          <input type="email" v-model="email" required />
-        </div>
-        <div>
-          <label for="phonenumber">Phone*</label>
-          <input type="text" v-model="phonenumber" required />
-        </div>
-        <div>
-          <label for="address">Address*</label>
-          <input type="text" v-model="address" required />
-        </div>
-        <div>
-          <label for="organization">Organization</label>
-          <input type="text" v-model="organization" />
-        </div>
-        <button type="submit">Register</button>
-        <div v-if="message" :class="{ 'message-error': !isSuccess, 'message-success': isSuccess }">{{ message }}</div>
+  <div class="register-page">
+  <div class="background-image"></div>
+    <div class="registration-container">
+      <div class="register-box">
+        <form @submit.prevent="register">
+          <h2>Owner Registration</h2>
+          <div class="form-group">
+            <label for="name">Name*:</label>
+            <input type="text" id="name" v-model="name" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email*:</label>
+            <input type="email" id="email" v-model="email" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password*:</label>
+            <input type="password" id="password" v-model="password" required />
+          </div>
+          <div class="form-group">
+            <label for="phonenumber">Phone Number*:</label>
+            <input type="text" id="phonenumber" v-model="phonenumber" required />
+          </div>
+          <div class="form-group">
+            <label for="address">Address*:</label>
+            <input type="text" id="address" v-model="address" required />
+          </div>
+          <div class="form-group"> 
+            <label for="organization">Organization*</label>
+            <input type="text" id="organization" v-model="organization" required />
+          </div>
+          <button type="submit">Register</button>
+          <div v-if="registrationMessage" class="registration-message">{{ registrationMessage }}</div>
       </form>
+      <router-link to="owner-login">Already have an Owner account? Log in here</router-link>
+      </div>
     </div>
   </div>
+  
 </template>
 
 <script>
@@ -78,61 +83,78 @@ export default {
 </script>
 
 <style scoped>
-/* Add some styling to center the form and make it look better */
-.register-container {
+.register-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-image: url('@/assets/BG2.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Adjust the opacity as needed */
+}
+
+.registration-container {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 
 .register-box {
-  background: white;
-  padding: 20px;
-  border: 2px solid green;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 400px;
 }
 
 .register-box h2 {
-  text-align: center;
   margin-bottom: 20px;
 }
 
-.register-box div {
+.form-group {
   margin-bottom: 15px;
 }
 
-.register-box label {
+label {
   display: block;
   margin-bottom: 5px;
 }
 
-.register-box input {
+input {
   width: 100%;
   padding: 8px;
   box-sizing: border-box;
 }
 
-.register-box button {
+button {
   width: 100%;
   padding: 10px;
-  background: green;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.message-success {
-  margin-top: 15px;
-  text-align: center;
-  color: green;
+button:hover {
+  background-color: #45a049;
 }
 
-.message-error {
-  margin-top: 15px;
-  text-align: center;
-  color: red;
+.registration-message {
+  margin-top: 10px;
+  color: green;
 }
 </style>

@@ -25,7 +25,6 @@
 
 <script>
 import axios from 'axios';
-import { mapActions } from 'vuex';
 
 export default {
   data() {
@@ -37,7 +36,6 @@ export default {
     };
   },
   methods: {
-    ...mapActions(['login']),
     async login() {
       try {
         const response = await axios.post('http://localhost:5163/Owner/login', {
@@ -48,15 +46,9 @@ export default {
         if (response.status === 200) {
           this.isSuccess = true;
           this.message = 'Login successful!';
-          const role = response.data.role;
-          this.$store.commit('setUserEmail', this.email);
-          this.login({ email: this.email, role });
-          setTimeout(() => {
-            if (this.$route.path !== '/owner-dashboard') {
-              this.$router.push('/owner-dashboard');
-            }
-          }, 2000);
+          this.$store.dispatch('login', { role: 'owner', email: this.email });
           // Redirect the user to the owner dashboard or perform other actions
+          this.$router.push('/owner-dashboard');
         } else {
           this.message = 'Wrong email/password';
         }

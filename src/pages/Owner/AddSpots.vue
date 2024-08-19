@@ -33,7 +33,7 @@
     methods: {
       async addSpot() {
         try {
-          await axios.post('http://localhost:5049/api/CampingSpots', {
+          await axios.post('http://localhost:5163/api/CampingSpots', {
             name: this.name,
             location: this.location,
             description: this.description

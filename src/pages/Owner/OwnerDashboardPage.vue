@@ -19,7 +19,7 @@
     </div>
     <div v-if="loading">Loading...</div>
     <div v-else>
-      <div v-if="campsites.length > 0">
+      <div v-if="campsites && campsites.length > 0">
         <h2>Your Campsites</h2>
         <div class="campsite-container">
           <div v-for="campsite in campsites" :key="campsite.id" class="campsite-card">
@@ -28,8 +28,11 @@
             <p><strong>Type:</strong> {{ campsite.type }}</p>
             <p><strong>Location:</strong> {{ campsite.location }}</p>
             <p><strong>Capacity:</strong> {{ campsite.capacity }}</p>
-            <p><strong>Price:</strong> {{ campsite.price }}</p>
-            <button @click="deleteCampsite(campsite.id)">Delete</button>
+            <p><strong>Price:</strong> € {{ campsite.price }}</p>
+            <p><strong>Available:</strong> {{ campsite.isAvailable }}</p>
+            <p><strong>ID:</strong> {{ campsite.id }}</p>
+            <p><strong>Email of Owner:</strong> {{ campsite.ownerEmail }}</p>
+            <button @click="deleteCampsite(campsite.name)">Delete</button>
           </div>
         </div>
       </div>
@@ -72,12 +75,6 @@
         </form>
       </div>
     </div>
-    <div class="action-buttons">
-      <button @click="goToOwnerInfo">Owner Info</button>
-    </div>
-    <div class="action-buttons">
-      <button @click="logout" class="logout-button">Logout</button>
-    </div>
   </div>
 </template>
 
@@ -96,7 +93,8 @@ export default {
         type: '',
         location: '',
         capacity: null,
-        price: null
+        price: null,
+        isavailable: true
       }
     };
   },
@@ -107,21 +105,25 @@ export default {
     async getCampsites() {
       try {
         this.loading = true;
-        const response = await axios.get('http://localhost:5163/CampingSite/Owner');
-        this.campsites = response.data.result;
+        const response = await axios.get(`http://localhost:5163/CampingSite/${this.$store.state.userEmail}`);
+        console.log('API response:', response);
+
+        this.campsites = Array.isArray(response.data) ? response.data : [];
+
       } catch (error) {
         console.error('Error fetching campsites:', error.message);
       } finally {
         this.loading = false;
       }
     },
-    async deleteCampsite(campsiteId) {
+    async deleteCampsite(campsiteName) {
       try {
-        const response = await axios.delete(`http://localhost:5163/CampingSite/${campsiteId}`);
-        if (response.status === 200) {
+        const response = await axios.delete(`http://localhost:5163/CampingSite/${campsiteName}`);
+        if (response.status === 204) {
           // Remove the campsite from the list
-          this.campsites = this.campsites.filter(campsite => campsite.id !== campsiteId);
+          this.campsites = this.campsites.filter(campsite => campsite.name !== campsiteName);
           console.log('Campsite deleted successfully');
+          await this.getCampsites();
         } else {
           console.error('Failed to delete campsite');
         }
@@ -136,14 +138,25 @@ export default {
       this.showCreate = false;
     },
     async createCampsite() {
+      console.log('Creating campsite with:', this.newCampsite);
       try {
+        this.newCampsite.ownerEmail = this.$store.state.userEmail;
         const response = await axios.post('http://localhost:5163/CampingSite', this.newCampsite);
+        console.log('API response:', response);
+
+
         if (response.status === 201) {
-          // Add the newly created campsite to the list
-          this.campsites.push(response.data.result);
-          console.log('Campsite created successfully');
-          // Hide the create form
-          this.hideCreateForm();
+        // Ensure response.data is correct
+          const newCampsite = response.data;
+          console.log('New campsite created:', newCampsite);
+
+          if (newCampsite && newCampsite.id) {
+            this.campsites.push(newCampsite);
+            console.log('Campsite created successfully');
+            this.hideCreateForm();
+          } else {
+            console.error('New campsite does not have an id');
+          }
         } else {
           console.error('Failed to create campsite');
         }
@@ -197,11 +210,6 @@ p {
   transition: background-color 0.3s;
 }
 
-.logout-button {
-  background-color: red;
-  color: white;
-}
-
 .action-buttons button:hover {
   background-color: #0056b3;
 }
@@ -216,7 +224,7 @@ p {
   width: 300px;
   padding: 20px;
   margin: 10px;
-  border: 1px solid #ccc;
+  border: 2px solid #008000;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: left;
@@ -248,6 +256,7 @@ p {
 }
 
 .overlay {
+  z-index: 1000;
   position: fixed;
   top: 0;
   left: 0;
@@ -260,6 +269,7 @@ p {
 }
 
 .create-form {
+  z-index: 1001;
   background-color: green;
   color: white;
   padding: 20px;

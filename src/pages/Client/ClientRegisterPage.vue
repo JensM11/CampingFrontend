@@ -1,31 +1,38 @@
 <template>
-  <div class="registration-container">
-    <form @submit.prevent="register">
-      <h2>Client Registration</h2>
-      <div class="form-group">
-        <label for="name">Name*:</label>
-        <input type="text" id="name" v-model="name" required />
+  <div class="register-page">
+    <div class="background-image"></div>
+    <div class="register-container">
+      <div class="register-box">
+        <form @submit.prevent="register">
+        <h2>Client Registration</h2>
+        <div class="form-group">
+          <label for="name">Name*:</label>
+          <input type="text" id="name" v-model="name" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email*:</label>
+          <input type="email" id="email" v-model="email" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password*:</label>
+          <input type="password" id="password" v-model="password" required />
+        </div>
+        <div class="form-group">
+          <label for="phonenumber">Phone Number*:</label>
+          <input type="text" id="phonenumber" v-model="phonenumber" required />
+        </div>
+        <div class="form-group">
+          <label for="address">Address*:</label>
+          <input type="text" id="address" v-model="address" required />
+        </div>
+        <button type="submit">Register</button>
+        <div v-if="registrationMessage" class="registration-message">{{ registrationMessage }}</div>
+      </form>
+      <router-link to="client-login">Already have a Client account? Log in here</router-link>
       </div>
-      <div class="form-group">
-        <label for="email">Email*:</label>
-        <input type="email" id="email" v-model="email" required />
-      </div>
-      <div class="form-group">
-        <label for="password">Password*:</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <div class="form-group">
-        <label for="phonenumber">Phone Number*:</label>
-        <input type="text" id="phonenumber" v-model="phonenumber" required />
-      </div>
-      <div class="form-group">
-        <label for="address">Address*:</label>
-        <input type="text" id="address" v-model="address" required />
-      </div>
-      <button type="submit">Register</button>
-      <div v-if="registrationMessage" class="registration-message">{{ registrationMessage }}</div>
-    </form>
+    </div>
   </div>
+  
 </template>
 
 <script>
@@ -69,21 +76,45 @@ export default {
 </script>
 
 <style scoped>
-.registration-container {
+.register-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-image: url('@/assets/BG.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Adjust the opacity as needed */
+}
+
+.register-container {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background-color: #f7f7f7;
+  width: 100%;
+  height: 100%;
 }
 
-form {
-  background: white;
-  padding: 20px;
+.register-box {
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 400px;
+}
+
+.register-box h2 {
+  margin-bottom: 20px;
 }
 
 .form-group {

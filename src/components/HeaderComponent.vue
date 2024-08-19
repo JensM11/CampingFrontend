@@ -43,7 +43,7 @@ export default {
   },
   methods: {
     logout() {
-      this.$store.commit('clearUserRole');
+      this.$store.commit('clearUser');
       this.$router.push('/').catch(err => {
         if (err.name !== 'NavigationDuplicated') {
           throw err;
@@ -60,7 +60,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: green;
+  background-color: #008000;
   color: white;
 }
 

@@ -16,7 +16,7 @@
           <button type="submit">Login</button>
           <div v-if="message" :class="{ 'message-error': !isSuccess, 'message-success': isSuccess }">{{ message }}</div>
         </form>
-        <router-link to="/register/client">Don't have an account? Register here as Client</router-link>
+        <router-link to="client-register">Don't have an account? Register here as Client</router-link>
       </div>
     </div>
   </div>

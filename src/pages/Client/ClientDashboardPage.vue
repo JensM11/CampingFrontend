@@ -19,7 +19,8 @@
               <p><strong>Type:</strong> {{ campsite.type }}</p>
               <p><strong>Location:</strong> {{ campsite.location }}</p>
               <p><strong>Capacity:</strong> {{ campsite.capacity }}</p>
-              <p><strong>Price:</strong> {{ campsite.price }}</p>
+              <p><strong>Price:</strong> € {{ campsite.price }}</p>
+              <p><strong>Available:</strong> {{ campsite.isAvailable }}</p>
             </div>
           </div>
         </div>
@@ -47,8 +48,8 @@
       async getCampsites() {
         try {
           this.loading = true;
-          const response = await axios.get('http://localhost:5163/CampingSite');
-          this.campsites = response.data.result;
+          const response = await axios.get('http://localhost:5163/CampingSite/Available');
+          this.campsites = response.data;
         } catch (error) {
           console.error('Error fetching campsites:', error.message);
         } finally {

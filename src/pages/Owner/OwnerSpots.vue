@@ -28,7 +28,7 @@
     methods: {
       async fetchSpots() {
         try {
-          const response = await axios.get('http://localhost:5049/api/CampingSpots');
+          const response = await axios.get('http://localhost:5163/api/CampingSpots');
           this.spots = response.data;
         } catch (error) {
           console.error('Error fetching spots:', error);
