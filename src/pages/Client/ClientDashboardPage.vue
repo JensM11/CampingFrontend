@@ -69,6 +69,7 @@
 
 <script>
 import axios from 'axios';
+import emailjs from 'emailjs-com';
 
 export default {
   data() {
@@ -81,6 +82,7 @@ export default {
   mounted() {
     this.getAvailableCampsites();
     this.getBookedCampsites();
+    emailjs.init('yo_ZqVqfVMaNwMXZ0');
   },
   methods: {
     async getAvailableCampsites() {
@@ -144,6 +146,33 @@ export default {
         if (response.status === 200) {
           await this.getAvailableCampsites();
           await this.getBookedCampsites();
+
+          const bookedCampsite = this.bookedCampsites.find(campsite => campsite.id === campsiteId);
+
+          if (bookedCampsite) {
+            // Prepare the email content
+            const templateParams = {
+              to_email: clientEmail,
+              campsite_name: bookedCampsite.name,
+              campsite_description: bookedCampsite.description,
+              campsite_type: bookedCampsite.type,
+              campsite_location: bookedCampsite.location,
+              campsite_capacity: bookedCampsite.capacity,
+              campsite_price: `€ ${bookedCampsite.price}`,
+              owner_name: bookedCampsite.ownerName,
+              owner_email: bookedCampsite.ownerEmail,
+              owner_phone: bookedCampsite.ownerPhoneNumber,
+              owner_organization: bookedCampsite.ownerOrganization,
+              booking_date: new Date().toLocaleString(),
+            };
+
+            emailjs.send('Camping_Mail', 'template_i13pzke', templateParams)
+              .then(() => {
+                console.log('Booking confirmation email sent successfully!');
+              }, (error) => {
+                console.error('Failed to send booking confirmation email:', error);
+              });
+          }
         } else {
           alert('Failed to book campsite.');
         }

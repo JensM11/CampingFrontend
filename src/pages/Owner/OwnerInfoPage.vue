@@ -24,10 +24,6 @@
             <input type="text" v-model="editOwner.name" required />
           </div>
           <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" v-model="editOwner.email" required />
-          </div>
-          <div class="form-group">
             <label for="phoneNumber">Phone Number:</label>
             <input type="text" v-model="editOwner.phoneNumber" required />
           </div>

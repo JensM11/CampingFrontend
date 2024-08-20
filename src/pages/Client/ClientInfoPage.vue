@@ -23,10 +23,6 @@
             <input type="text" v-model="editClient.name" required />
           </div>
           <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" v-model="editClient.email" required />
-          </div>
-          <div class="form-group">
             <label for="phoneNumber">Phone Number:</label>
             <input type="text" v-model="editClient.phoneNumber" required />
           </div>

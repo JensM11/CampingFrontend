@@ -55,7 +55,7 @@ export default {
   methods: {
     sendEmail() {
       const serviceID = 'Camping_Mail';
-      const templateID = 'template_6qofgxo';
+      const templateID = 'template_Camping';
       const userID = 'yo_ZqVqfVMaNwMXZ0';
 
       if (this.form.name && this.form.email && this.form.message) {

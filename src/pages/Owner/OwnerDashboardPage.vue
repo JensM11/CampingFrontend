@@ -181,10 +181,23 @@ export default {
       }
     },
     showCreateForm() {
+      this.resetForm();
       this.showCreate = true;
     },
     hideCreateForm() {
       this.showCreate = false;
+    },
+    resetForm() {
+      this.newCampsite = {
+        name: '',
+        description: '',
+        type: '',
+        location: '',
+        capacity: null,
+        price: null,
+        isavailable: true,
+        clientEmail: ''
+      };
     },
     async createCampsite() {
       console.log('Creating campsite with:', this.newCampsite);
