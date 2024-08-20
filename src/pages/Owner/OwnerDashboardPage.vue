@@ -19,23 +19,52 @@
     </div>
     <div v-if="loading">Loading...</div>
     <div v-else>
-      <div v-if="campsites && campsites.length > 0">
-        <h2>Your Campsites</h2>
+      <div v-if="bookedCampsites.length > 0">
+        <h2>Booked Campsites</h2>
         <div class="campsite-container">
-          <div v-for="campsite in campsites" :key="campsite.id" class="campsite-card">
-            <h3>{{ campsite.name }}</h3>
-            <p><strong>Description:</strong> {{ campsite.description }}</p>
-            <p><strong>Type:</strong> {{ campsite.type }}</p>
-            <p><strong>Location:</strong> {{ campsite.location }}</p>
-            <p><strong>Capacity:</strong> {{ campsite.capacity }}</p>
-            <p><strong>Price:</strong> € {{ campsite.price }}</p>
-            <p><strong>Available:</strong> {{ campsite.isAvailable }}</p>
-            <p><strong>ID:</strong> {{ campsite.id }}</p>
-            <p><strong>Email of Owner:</strong> {{ campsite.ownerEmail }}</p>
-            <button @click="deleteCampsite(campsite.name)">Delete</button>
+          <div v-for="campsite in bookedCampsites" :key="campsite.id" class="campsite-card">
+            <div class="campsite-info">
+              <p><strong>Name:</strong> {{ campsite.name }}</p>
+              <p><strong>Description:</strong> {{ campsite.description }}</p>
+              <p><strong>Type:</strong> {{ campsite.type }}</p>
+              <p><strong>Location:</strong> {{ campsite.location }}</p>
+              <p><strong>Capacity:</strong> {{ campsite.capacity }}</p>
+              <p><strong>Price:</strong> ${{ campsite.price }}</p>
+              <p><strong>Status:</strong> {{ campsite.isAvailable ? 'Available' : 'Booked' }}</p>
+            </div>
+            <div class="owner-info">
+              <h3>Client Information</h3>
+              <p><strong>Client Email:</strong> {{ campsite.clientEmail }}</p>
+              <p><strong>Client Name:</strong> {{ campsite.clientName || 'N/A' }}</p>
+              <p><strong>Client Phone:</strong> {{ campsite.clientPhone || 'N/A' }}</p>
+            </div>
+            <button class="delete-button" @click="deleteCampsite(campsite.name)">Delete</button>
           </div>
         </div>
       </div>
+
+      <div v-if="availableCampsites.length > 0">
+        <h2>Available Campsites</h2>
+        <div class="campsite-container">
+          <div v-for="campsite in availableCampsites" :key="campsite.id" class="campsite-card">
+            <div class="campsite-info">
+              <h3>{{ campsite.name }}</h3>
+              <p><strong>Description:</strong> {{ campsite.description }}</p>
+              <p><strong>Type:</strong> {{ campsite.type }}</p>
+              <p><strong>Location:</strong> {{ campsite.location }}</p>
+              <p><strong>Capacity:</strong> {{ campsite.capacity }}</p>
+              <p><strong>Price:</strong> € {{ campsite.price }}</p>
+              <p><strong>Available:</strong> {{ campsite.isAvailable }}</p>
+            </div>
+            <div class="client-info">
+              <h3>Client Information</h3>
+              <p>No client information</p>
+            </div>
+            <button class="delete-button" @click="deleteCampsite(campsite.name)">Delete</button>
+          </div>
+        </div>
+      </div>
+
       <div v-else>
         <p>No campsites found.</p>
       </div>
@@ -85,7 +114,8 @@ export default {
   data() {
     return {
       loading: false,
-      campsites: [],
+      availableCampsites: [],
+      bookedCampsites: [],
       showCreate: false,
       newCampsite: {
         name: '',
@@ -94,7 +124,8 @@ export default {
         location: '',
         capacity: null,
         price: null,
-        isavailable: true
+        isavailable: true,
+        clientEmail: ''
       }
     };
   },
@@ -108,8 +139,25 @@ export default {
         const response = await axios.get(`http://localhost:5163/CampingSite/${this.$store.state.userEmail}`);
         console.log('API response:', response);
 
-        this.campsites = Array.isArray(response.data) ? response.data : [];
+        const campsites = response.data;
 
+        this.availableCampsites = campsites.availableSites;
+
+        this.bookedCampsites = await Promise.all(
+          campsites.bookedSites.map(async (campsite) => {
+            if (campsite.clientEmail) {
+              try {
+                const clientResponse = await axios.get(`http://localhost:5163/user/email/${campsite.clientEmail}`);
+                const clientData = clientResponse.data.result;
+                campsite.clientName = clientData.name;
+                campsite.clientPhone = clientData.phoneNumber;
+              } catch (error) {
+                console.error(`Error fetching client information for ${campsite.name}:`, error.message);
+              }
+            }
+            return campsite;
+          })
+        );
       } catch (error) {
         console.error('Error fetching campsites:', error.message);
       } finally {
@@ -121,7 +169,8 @@ export default {
         const response = await axios.delete(`http://localhost:5163/CampingSite/${campsiteName}`);
         if (response.status === 204) {
           // Remove the campsite from the list
-          this.campsites = this.campsites.filter(campsite => campsite.name !== campsiteName);
+          this.availableCampsites = this.availableCampsites.filter(campsite => campsite.name !== campsiteName);
+          this.bookedCampsites = this.bookedCampsites.filter(campsite => campsite.name !== campsiteName);
           console.log('Campsite deleted successfully');
           await this.getCampsites();
         } else {
@@ -151,7 +200,7 @@ export default {
           console.log('New campsite created:', newCampsite);
 
           if (newCampsite && newCampsite.id) {
-            this.campsites.push(newCampsite);
+            this.availableCampsites.push(newCampsite);
             console.log('Campsite created successfully');
             this.hideCreateForm();
           } else {
@@ -174,157 +223,175 @@ export default {
           throw err;
         }
       });
-    }
+    },
   }
 };
 </script>
 
+
 <style scoped>
 .owner-dashboard {
-  padding: 20px;
-  text-align: center;
+    padding: 20px;
+    text-align: center;
 }
 
 h1 {
-  font-size: 36px;
+    font-size: 36px;
 }
 
 p {
-  font-size: 22px;
-  margin: 20px 0;
+    font-size: 22px;
+    margin: 20px 0;
 }
 
 .action-buttons {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .action-buttons button {
-  display: block;
-  width: 200px;
-  margin: 10px auto;
-  padding: 10px;
-  font-size: 30px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+    display: block;
+    width: 200px;
+    margin: 10px auto;
+    padding: 10px;
+    font-size: 30px;
+    border: 2px solid green;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .action-buttons button:hover {
-  background-color: #0056b3;
+    background-color: green;
+    color: white;
 }
 
 .campsite-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .campsite-card {
-  width: 300px;
-  padding: 20px;
-  margin: 10px;
-  border: 2px solid #008000;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: left;
+    width: 600px; /* Increased the width to make cards wider */
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid green;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column; /* Ensure vertical stacking */
+    text-align: left;
 }
 
-.campsite-card h3 {
-  margin-top: 0;
-  font-size: 30px;
+.campsite-info, .client-info {
+    margin-bottom: 10px;
 }
 
-.campsite-card p {
-  margin: 5px 0;
-  font-size: 20px;
+.campsite-info {
+    border-bottom: 2px solid green; /* Thin green line separating sections */
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
-.campsite-card button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  font-size: 18px;
+.client-info h3 {
+    margin-top: 0;
+    font-size: 30px;
 }
 
-.campsite-card button:hover {
-  background-color: #0056b3;
+.campsite-info p, .client-info p {
+    margin: 5px 0;
+    font-size: 20px;
 }
 
 .overlay {
-  z-index: 1000;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-button {
+    padding: 15px 20px;
+    font-size: 18px;
+    border: 2px solid green;
+    border-radius: 8px;
+    background-color: white;
+    color: green;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    text-align: center;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.delete-button:hover {
+    background-color: green;
+    color: white;
 }
 
 .create-form {
-  z-index: 1001;
-  background-color: green;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  text-align: left;
-  width: 400px;
+    z-index: 1001;
+    background-color: green;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    width: 400px;
 }
 
 .create-form h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 30px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 30px;
 }
 
 .form-group {
-  margin-bottom: 15px;
+    margin-bottom: 15px;
 }
 
 .form-group label {
-  display: block;
-  font-weight: bold;
-  font-size: 20px;
+    display: block;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .form-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 18px;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 18px;
 }
 
 .form-group button {
-  padding: 10px;
-  font-size: 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+    padding: 10px;
+    font-size: 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .form-group button[type="submit"] {
-  background-color: #007bff;
-  color: #fff;
+    background-color: #007bff;
+    color: #fff;
 }
 
 .form-group button[type="button"] {
-  background-color: #ccc;
-  margin-left: 10px;
+    background-color: #ccc;
+    margin-left: 10px;
 }
 
 .form-group button[type="submit"]:hover,
 .form-group button[type="button"]:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 </style>
